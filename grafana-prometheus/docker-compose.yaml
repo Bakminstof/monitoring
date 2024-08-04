@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  grafana:
+    image: grafana/grafana:8.5.3-ubuntu
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./volumes/grafana/data:/var/lib/grafana
+      - ./volumes/grafana/configs/grafana.ini:/etc/grafana/grafana.ini
+      - ./volumes/grafana/configs/ldap.toml:/etc/grafana/ldap.toml
+  prometheus:
+    image: prom/prometheus:v2.36.0
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./volumes/prometheus/data:/prometheus
+      - ./volumes/prometheus/configs/prometheus.yml:/etc/prometheus/prometheus.yml
