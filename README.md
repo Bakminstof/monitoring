@@ -1,4 +1,4 @@
-Мониторинг ресурсов для
+Мониторинг ресурсов
 
 Для получения метрик с Node-exporter в конфигурации Prometheus 
 (grafana-prometheus/volumes/prometheus/prometheus.yml) нужно добавить хост Node-exporter
