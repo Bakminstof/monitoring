@@ -1,0 +1,63 @@
+name: monitoring
+
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+
+  docker-state-exporter:
+    image: karugaru/docker_state_exporter
+    container_name: docker-state-exporter
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "127.0.0.1:8082:8080"
+    mem_limit: 128m
+    cpus: 0.25
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "127.0.0.1:9110:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+    mem_limit: 128m
+    cpus: 0.25
+    restart: unless-stopped
+
+  vmagent:
+    image: victoriametrics/vmagent:v1.128.0
+    container_name: node-exporter
+    depends_on:
+      - node-exporter
+      - docker-state-exporter
+      - cadvisor
+    ports:
+      - "127.0.0.1:8429:8429"
+    volumes:
+      - ./vm-agent/data:/vmagentdata
+      - ./vm-agent/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "--remoteWrite.url=$VM_REMOTE_WRITE_URL"
+      - "--remoteWrite.basicAuth.username=$VM_REMOTE_WRITE_USERNAME"
+      - "--remoteWrite.basicAuth.password=$VM_REMOTE_WRITE_PASSWORD"
+    restart: unless-stopped

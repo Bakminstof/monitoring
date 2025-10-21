@@ -1,0 +1,5 @@
+.idea
+
+/vm-agent/data
+
+*.env
