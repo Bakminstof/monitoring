@@ -8,8 +8,8 @@ services:
     volumes:
       - /dev:/dev:ro
       - /run/udev:/run/udev:ro
-    mem_limit: 128m
-    cpus: 0.25
+    mem_limit: 256m
+    cpus: 0.5
     ports:
       - "$SERVICES_HOST:$SMARTCTL_EXPORTER_PORT:9633"
     user: root
