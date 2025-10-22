@@ -44,20 +44,9 @@ services:
     restart: unless-stopped
 
   vmagent:
-    image: victoriametrics/vmagent:v1.128.0
-    container_name: node-exporter
     depends_on:
       - node-exporter
       - docker-state-exporter
       - cadvisor
-    ports:
-      - "127.0.0.1:8429:8429"
     volumes:
-      - ./vm-agent/data:/vmagentdata
-      - ./vm-agent/prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - "--promscrape.config=/etc/prometheus/prometheus.yml"
-      - "--remoteWrite.url=$VM_REMOTE_WRITE_URL"
-      - "--remoteWrite.basicAuth.username=$VM_REMOTE_WRITE_USERNAME"
-      - "--remoteWrite.basicAuth.password=$VM_REMOTE_WRITE_PASSWORD"
-    restart: unless-stopped
+      - ../vm-agent/configs/prometheus.yml:/etc/prometheus/configs/prometheus.yml

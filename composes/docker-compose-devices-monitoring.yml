@@ -1,0 +1,25 @@
+name: monitoring
+
+services:
+  smartctl-exporter:
+    image: prometheuscommunity/smartctl-exporter:latest
+    container_name: smartctl-exporter
+    privileged: true
+    volumes:
+      - /dev:/dev:ro
+      - /run/udev:/run/udev:ro
+    mem_limit: 128m
+    cpus: 0.25
+    ports:
+      - "127.0.0.1:9633:9633"
+    user: root
+    command:
+      - '--smartctl.path=/usr/sbin/smartctl'
+      - '--web.listen-address=:9633'
+    restart: unless-stopped
+
+  vmagent:
+    depends_on:
+      - smartctl-exporter
+    volumes:
+      - ../vm-agent/configs/prometheus-drives.yml:/etc/prometheus/configs/prometheus-drives.yml
