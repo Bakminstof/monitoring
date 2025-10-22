@@ -12,7 +12,7 @@ services:
     command: >
       -promscrape.config=/etc/prometheus/scrape_config.yml
       --remoteWrite.url=$VM_REMOTE_WRITE_URL
-      --remoteWrite.label='instance="$HOSTNAME"'
+      --remoteWrite.label='instance=$HOSTNAME'
       --remoteWrite.basicAuth.username=$VM_REMOTE_WRITE_USERNAME
       --remoteWrite.basicAuth.password=$VM_REMOTE_WRITE_PASSWORD
     restart: unless-stopped
