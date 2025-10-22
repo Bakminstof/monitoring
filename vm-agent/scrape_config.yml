@@ -1,5 +1,6 @@
 global:
-  scrape_interval: 10s
+  scrape_interval: 30s
+  scrape_timeout: 20s
 
 scrape_config_files:
 - configs/*.yml
