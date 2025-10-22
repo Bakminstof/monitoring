@@ -17,9 +17,16 @@ services:
       - '--smartctl.path=/usr/sbin/smartctl'
       - '--web.listen-address=:9633'
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:9633/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   vmagent:
     depends_on:
-      - smartctl-exporter
+      smartctl-exporter:
+        condition: service_healthy
     volumes:
       - ../vm-agent/configs/prometheus-devices.yml:/etc/prometheus/configs/prometheus-devices.yml

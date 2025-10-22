@@ -14,6 +14,12 @@ services:
     mem_limit: 256m
     cpus: 0.5
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   docker-state-exporter:
     image: karugaru/docker_state_exporter
@@ -25,6 +31,12 @@ services:
     mem_limit: 128m
     cpus: 0.25
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   node-exporter:
     image: prom/node-exporter:latest
@@ -42,11 +54,20 @@ services:
     mem_limit: 128m
     cpus: 0.25
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:9100/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   vmagent:
     depends_on:
-      - node-exporter
-      - docker-state-exporter
-      - cadvisor
+      node-exporter:
+        condition: service_healthy
+      docker-state-exporter:
+        condition: service_healthy
+      cadvisor:
+        condition: service_healthy
     volumes:
       - ../vm-agent/configs/prometheus.yml:/etc/prometheus/configs/prometheus.yml
