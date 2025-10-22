@@ -11,7 +11,7 @@ services:
     mem_limit: 128m
     cpus: 0.25
     ports:
-      - "127.0.0.1:9633:9633"
+      - "$SERVICES_HOST:$SMARTCTL_EXPORTER_PORT:9633"
     user: root
     command:
       - '--smartctl.path=/usr/sbin/smartctl'

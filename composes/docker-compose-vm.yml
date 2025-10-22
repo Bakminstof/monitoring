@@ -5,9 +5,9 @@ services:
     image: victoriametrics/vmagent:v1.128.0
     container_name: vmagent
     ports:
-      - "127.0.0.1:8429:8429"
+      - "$SERVICES_HOST:$VM_AGENT_PORT:8429"
     volumes:
-      - ../vm-agent/data:/vmagentdata
+      - "$VM_DATA_PATH:/vmagentdata"
       - ../vm-agent/scrape_config.yml:/etc/prometheus/scrape_config.yml
     command:
       - "-promscrape.config=/etc/prometheus/scrape_config.yml"

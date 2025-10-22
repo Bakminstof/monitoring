@@ -5,7 +5,7 @@ services:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
     ports:
-      - "127.0.0.1:8081:8080"
+      - "$SERVICES_HOST:$CADVISOR_PORT:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -27,7 +27,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "127.0.0.1:8082:8080"
+      - "$SERVICES_HOST:$DOCKER_STATE_EXPORTER_PORT:8080"
     mem_limit: 128m
     cpus: 0.25
     restart: unless-stopped
@@ -42,7 +42,7 @@ services:
     image: prom/node-exporter:latest
     container_name: node-exporter
     ports:
-      - "127.0.0.1:9110:9100"
+      - "$SERVICES_HOST:$NODE_EXPORTER_PORT:9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
