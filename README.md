@@ -148,6 +148,8 @@ docker compose -f composes/docker-compose-vm.yml \
 - **System**: Uptime, service availability, update status
 
 ## 📊 Dashboard Features
+### [Dashboards](dashboards)
+
 ### 🎯 S.M.A.R.T. Disk Health Dashboard
 - Real-time disk temperature monitoring
 
