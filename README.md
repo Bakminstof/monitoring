@@ -19,7 +19,7 @@ NODE_EXPORTER_PORT=9110
 ## 🚀 Quick Start
 
 ```bash
-docker compose -f composes/docker-compose-vm.yml \
+HOSTNAME=$(hostname) docker compose -f composes/docker-compose-vm.yml \
                -f composes/docker-compose-devices-monitoring.yml \
                -f composes/docker-compose-monitoring.yml \
                --env-file .env up -d

@@ -4,6 +4,7 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
+    hostname: ${HOSTNAME}
     ports:
       - "$SERVICES_HOST:$CADVISOR_PORT:8080"
     volumes:
@@ -24,6 +25,7 @@ services:
   docker-state-exporter:
     image: karugaru/docker_state_exporter
     container_name: docker-state-exporter
+    hostname: ${HOSTNAME}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
@@ -41,6 +43,7 @@ services:
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
+    hostname: ${HOSTNAME}
     ports:
       - "$SERVICES_HOST:$NODE_EXPORTER_PORT:9100"
     volumes:
