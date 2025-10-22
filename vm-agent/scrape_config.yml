@@ -1,7 +1,5 @@
 global:
   scrape_interval: 10s
-  external_labels:
-      instance: '${HOSTNAME}'
 
 scrape_config_files:
 - configs/*.yml

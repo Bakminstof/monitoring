@@ -13,6 +13,7 @@ services:
       - ../vm-agent/scrape_config.yml:/etc/prometheus/scrape_config.yml
     command:
       - "-promscrape.config=/etc/prometheus/scrape_config.yml"
+      - "-prometheus.global.externalLabels=instance=${HOSTNAME}"
       - "--remoteWrite.url=$VM_REMOTE_WRITE_URL"
       - "--remoteWrite.basicAuth.username=$VM_REMOTE_WRITE_USERNAME"
       - "--remoteWrite.basicAuth.password=$VM_REMOTE_WRITE_PASSWORD"
