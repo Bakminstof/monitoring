@@ -22,4 +22,4 @@ services:
     depends_on:
       - smartctl-exporter
     volumes:
-      - ../vm-agent/configs/prometheus-drives.yml:/etc/prometheus/configs/prometheus-drives.yml
+      - ../vm-agent/configs/prometheus-devices.yml:/etc/prometheus/configs/prometheus-devices.yml
