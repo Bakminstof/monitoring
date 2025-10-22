@@ -4,7 +4,8 @@ services:
   vmagent:
     image: victoriametrics/vmagent:v1.128.0
     container_name: vmagent
-    hostname: ${HOSTNAME}
+    environment:
+      HOSTNAME: $HOSTNAME
     ports:
       - "$SERVICES_HOST:$VM_AGENT_PORT:8429"
     volumes:

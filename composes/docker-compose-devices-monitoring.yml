@@ -4,7 +4,6 @@ services:
   smartctl-exporter:
     image: prometheuscommunity/smartctl-exporter:latest
     container_name: smartctl-exporter
-    hostname: ${HOSTNAME}
     privileged: true
     volumes:
       - /dev:/dev:ro
