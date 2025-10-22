@@ -97,8 +97,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_smart_status",
+          "editorMode": "code",
+          "expr": "smartctl_device_smart_status{instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -171,8 +171,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_temperature{temperature_type=\"current\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_temperature{temperature_type=\"current\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -245,8 +245,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"SSD_Life_Left\", attribute_value_type=\"value\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_attribute{attribute_name=\"SSD_Life_Left\", attribute_value_type=\"value\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -319,8 +319,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_power_cycle_count",
+          "editorMode": "code",
+          "expr": "smartctl_device_power_cycle_count{instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -463,7 +463,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "max(smartctl_device_capacity_bytes * on(instance, device) group_left(model_family, model_name, serial_number, firmware_version, form_factor, ata_version, sata_version, protocol) smartctl_device) by (device, model_name, model_family, serial_number, firmware_version, form_factor, ata_version, sata_version, protocol)",
+          "expr": "max(smartctl_device_capacity_bytes{instance=\"$instance\", device=~\"$device\"} * on(instance, device) group_left(model_family, model_name, serial_number, firmware_version, form_factor, ata_version, sata_version, protocol) smartctl_device{instance=\"$instance\", device=~\"$device\"}) by (device, model_name, model_family, serial_number, firmware_version, form_factor, ata_version, sata_version, protocol)",
           "format": "table",
           "instant": true,
           "legendFormat": "{{device}} - {{model_name}}",
@@ -541,7 +541,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": 0
               },
               {
@@ -549,7 +549,7 @@
                 "value": 10
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 50
               }
             ]
@@ -596,8 +596,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"Reallocated_Sector_Ct\", attribute_value_type=\"value\"}",
+          "editorMode": "code",
+          "expr": "100 - smartctl_device_attribute{attribute_name=\"Reallocated_Sector_Ct\", attribute_value_type=\"value\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -639,11 +639,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": 0
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 1
               }
             ]
@@ -690,8 +690,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"Current_Pending_Sector\", attribute_value_type=\"raw\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_attribute{attribute_name=\"Current_Pending_Sector\", attribute_value_type=\"raw\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -733,11 +733,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": 0
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 1
               }
             ]
@@ -784,8 +784,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"Offline_Uncorrectable\", attribute_value_type=\"raw\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_attribute{attribute_name=\"Offline_Uncorrectable\", attribute_value_type=\"raw\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -810,7 +810,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": 0
               },
               {
@@ -818,7 +818,7 @@
                 "value": 50
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 80
               }
             ]
@@ -865,8 +865,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"Raw_Read_Error_Rate\", attribute_value_type=\"value\"}",
+          "editorMode": "code",
+          "expr": "100 - smartctl_device_attribute{attribute_name=\"Raw_Read_Error_Rate\", attribute_value_type=\"value\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -891,7 +891,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": 0
               },
               {
@@ -899,7 +899,7 @@
                 "value": 50
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 80
               }
             ]
@@ -946,8 +946,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"Seek_Error_Rate\", attribute_value_type=\"value\"}",
+          "editorMode": "code",
+          "expr": "100 - smartctl_device_attribute{attribute_name=\"Seek_Error_Rate\", attribute_value_type=\"value\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -989,11 +989,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": 0
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 1
               }
             ]
@@ -1040,8 +1040,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"Reported_Uncorrect\", attribute_value_type=\"raw\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_attribute{attribute_name=\"Reported_Uncorrect\", attribute_value_type=\"raw\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -1083,11 +1083,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": 0
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 1
               }
             ]
@@ -1134,8 +1134,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"Command_Timeout\", attribute_value_type=\"raw\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_attribute{attribute_name=\"Command_Timeout\", attribute_value_type=\"raw\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -1177,11 +1177,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": 0
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 1
               }
             ]
@@ -1228,8 +1228,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=~\"SATA_CRC_Error_Count|UDMA_CRC_Error_Count\", attribute_value_type=\"raw\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_attribute{attribute_name=~\"SATA_CRC_Error_Count|UDMA_CRC_Error_Count\", attribute_value_type=\"raw\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}} - {{attribute_name}}",
           "range": true,
           "refId": "A"
@@ -1294,8 +1294,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_rotation_rate",
+          "editorMode": "code",
+          "expr": "smartctl_device_rotation_rate{instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -1368,8 +1368,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_power_on_seconds / 3600",
+          "editorMode": "code",
+          "expr": "smartctl_device_power_on_seconds{instance=\"$instance\", device=~\"$device\"} / 3600",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -1434,8 +1434,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_interface_speed{speed_type=\"current\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_interface_speed{speed_type=\"current\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -1477,11 +1477,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": 0
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 1
               }
             ]
@@ -1521,8 +1521,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_error_log_count{error_log_type=\"summary\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_error_log_count{error_log_type=\"summary\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -1550,7 +1550,7 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 10,
+            "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1604,7 +1604,7 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom",
+          "placement": "right",
           "showLegend": true
         },
         "tooltip": {
@@ -1620,8 +1620,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_temperature{temperature_type=\"current\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_temperature{temperature_type=\"current\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}}",
           "range": true,
           "refId": "A"
@@ -1649,7 +1649,7 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 10,
+            "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1703,7 +1703,7 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom",
+          "placement": "right",
           "showLegend": true
         },
         "tooltip": {
@@ -1719,8 +1719,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"Reallocated_Sector_Ct\", attribute_value_type=\"value\"}",
+          "editorMode": "code",
+          "expr": "100 - smartctl_device_attribute{attribute_name=\"Reallocated_Sector_Ct\", attribute_value_type=\"value\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}} - Reallocated",
           "range": true,
           "refId": "A"
@@ -1730,8 +1730,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=\"Raw_Read_Error_Rate\", attribute_value_type=\"value\"}",
+          "editorMode": "code",
+          "expr": "100 - smartctl_device_attribute{attribute_name=\"Raw_Read_Error_Rate\", attribute_value_type=\"value\", instance=\"$instance\", device=~\"$device\"}",
           "legendFormat": "{{device}} - Read Errors",
           "range": true,
           "refId": "B"
@@ -1829,6 +1829,7 @@
       "id": 15,
       "options": {
         "cellHeight": "sm",
+        "frameIndex": 1,
         "showHeader": true
       },
       "pluginVersion": "12.2.0",
@@ -1838,8 +1839,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=~\"Reallocated_Sector_Ct|Current_Pending_Sector|Offline_Uncorrectable|Raw_Read_Error_Rate|Seek_Error_Rate|Reported_Uncorrect|Command_Timeout|SSD_Life_Left\", attribute_value_type=\"value\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_attribute{attribute_name=~\"Reallocated_Sector_Ct|Current_Pending_Sector|Offline_Uncorrectable|Raw_Read_Error_Rate|Seek_Error_Rate|Reported_Uncorrect|Command_Timeout|SSD_Life_Left\", attribute_value_type=\"value\", instance=\"$instance\", device=~\"$device\"}",
           "format": "table",
           "instant": true,
           "legendFormat": "{{attribute_name}}",
@@ -1851,8 +1852,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "builder",
-          "expr": "smartctl_device_attribute{attribute_name=~\"Reallocated_Sector_Ct|Current_Pending_Sector|Offline_Uncorrectable|Raw_Read_Error_Rate|Seek_Error_Rate|Reported_Uncorrect|Command_Timeout|SSD_Life_Left\", attribute_value_type=\"raw\"}",
+          "editorMode": "code",
+          "expr": "smartctl_device_attribute{attribute_name=~\"Reallocated_Sector_Ct|Current_Pending_Sector|Offline_Uncorrectable|Raw_Read_Error_Rate|Seek_Error_Rate|Reported_Uncorrect|Command_Timeout|SSD_Life_Left\", attribute_value_type=\"raw\", instance=\"$instance\", device=~\"$device\"}",
           "format": "table",
           "instant": true,
           "legendFormat": "{{attribute_name}}_raw",
@@ -1888,16 +1889,73 @@
         "refresh": 1,
         "regex": "",
         "type": "datasource"
+      },
+      {
+        "current": {
+          "text": "black-square",
+          "value": "black-square"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${data_source}"
+        },
+        "definition": "label_values(node_uname_info,instance)",
+        "label": "Instance",
+        "name": "instance",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(node_uname_info,instance)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${data_source}"
+        },
+        "definition": "label_values(smartctl_device{instance=\"$instance\"},device)",
+        "description": "",
+        "includeAll": true,
+        "label": "Device",
+        "name": "device",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(smartctl_device{instance=\"$instance\"},device)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "baseFilters": [],
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${data_source}"
+        },
+        "filters": [],
+        "name": "Filters",
+        "type": "adhoc"
       }
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-1m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "🚨 S.M.A.R.T. Disk Health Dashboard",
-  "uid": "23c60111-8541-44b7-bdd0-6e8a468189dd",
-  "version": 23
+  "uid": "23c60111-8541-44b7-bdd0-6e8a46818921",
+  "version": 68
 }

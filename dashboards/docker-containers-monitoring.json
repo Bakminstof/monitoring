@@ -94,7 +94,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "count(count(container_last_seen) by (name))",
+          "expr": "count(count by(name) (container_last_seen{instance=\"$instance\"}))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -167,7 +167,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "container_state_status",
+          "expr": "container_state_status{instance=\"$instance\"}",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -397,8 +397,8 @@
             "uid": "${data_source}"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "node_load1{job=\"$host_node_exporter_job_name\"}",
+          "editorMode": "code",
+          "expr": "node_load1{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "interval": "",
@@ -523,8 +523,8 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "editorMode": "code",
-          "expr": "sum(irate(node_disk_read_bytes_total[5m]))",
+          "editorMode": "builder",
+          "expr": "sum(irate(node_disk_read_bytes_total{instance=\"$instance\"}[$__rate_interval]))",
           "interval": "2s",
           "intervalFactor": 4,
           "legendFormat": "read",
@@ -538,11 +538,13 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "expr": "sum(irate(node_disk_written_bytes_total[5m]))",
+          "editorMode": "builder",
+          "expr": "sum(irate(node_disk_written_bytes_total{instance=\"$instance\"}[$__rate_interval]))",
           "interval": "2s",
           "intervalFactor": 4,
           "legendFormat": "written",
           "metric": "",
+          "range": true,
           "refId": "B",
           "step": 8
         },
@@ -551,11 +553,13 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "expr": "sum(irate(node_disk_io_time_seconds_total[5m]))",
+          "editorMode": "builder",
+          "expr": "sum(irate(node_disk_io_time_seconds_total{instance=\"$instance\"}[$__rate_interval]))",
           "interval": "2s",
           "intervalFactor": 4,
           "legendFormat": "io time",
           "metric": "",
+          "range": true,
           "refId": "C",
           "step": 8
         }
@@ -647,7 +651,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "container_state_status{name=~\".+\"}",
+          "expr": "container_state_status{name=~\"$container_name\", instance=\"$instance\"}",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -1053,7 +1057,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "CPU usage"
+            "displayName": "Memory usage"
           }
         ]
       },
@@ -1066,7 +1070,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\".+\"}[15m])) by (name) * 100",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name) * 100",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -1082,7 +1086,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(container_memory_usage_bytes{name=~\".+\"}) by (name)",
+          "expr": "sum(container_memory_usage_bytes{name=~\"$container_name\",instance=\"$instance\"}) by (name)",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -1097,7 +1101,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_fs_reads_bytes_total{name=~\".+\"}[5m])) by (name)\r\n",
+          "expr": "sum(rate(container_fs_reads_bytes_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name)\r\n",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1112,7 +1116,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_fs_writes_bytes_total{name=~\".+\"}[5m])) by (name)\r\n",
+          "expr": "sum(rate(container_fs_writes_bytes_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name)\r\n",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1127,7 +1131,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_network_receive_bytes_total{name=~\".+\"}[5m])) by (name)\r\n",
+          "expr": "sum(rate(container_network_receive_bytes_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name)\r\n",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1142,7 +1146,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_network_transmit_bytes_total{name=~\".+\"}[5m])) by (name)\r\n",
+          "expr": "sum(rate(container_network_transmit_bytes_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name)\r\n",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1322,7 +1326,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
+        "h": 16,
         "w": 10,
         "x": 0,
         "y": 25
@@ -1361,7 +1365,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "time() - container_start_time_seconds{image!=\"\"}",
+          "expr": "time() - container_start_time_seconds{name=~\"$container_name\", instance=\"$instance\"}",
           "instant": true,
           "legendFormat": "{{name}}",
           "range": false,
@@ -1430,7 +1434,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
+        "h": 16,
         "w": 14,
         "x": 10,
         "y": 25
@@ -1480,7 +1484,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "count by(name) (count_over_time(container_last_seen{name=~\".+\"}[$__interval]))",
+          "expr": "count by(name) (count_over_time(container_last_seen{name=~\"$container_name\", instance=\"$instance\"}[$__interval]))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -1559,7 +1563,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 41
       },
       "id": 12,
       "options": {
@@ -1590,7 +1594,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\".+\"}[15m])) by (name) * 100",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name) * 100",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1671,7 +1675,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 43
+        "y": 50
       },
       "id": 13,
       "options": {
@@ -1701,10 +1705,12 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "expr": "sum by (name)(container_memory_usage_bytes{image!=\"\",container_label_org_label_schema_group=\"\"})",
+          "editorMode": "code",
+          "expr": "sum by (name)(container_memory_usage_bytes{name=~\"$container_name\",container_label_org_label_schema_group=\"\",instance=\"$instance\"})",
           "intervalFactor": 1,
           "legendFormat": "{{ name }}",
           "metric": "container_memory_usage",
+          "range": true,
           "refId": "A",
           "step": 1
         }
@@ -1781,7 +1787,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 43
+        "y": 50
       },
       "id": 14,
       "options": {
@@ -1793,7 +1799,9 @@
           ],
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
         },
         "tooltip": {
           "hideZeros": false,
@@ -1809,10 +1817,12 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "expr": "sum by (name) (container_memory_cache{image!=\"\",container_label_org_label_schema_group=\"\"})",
+          "editorMode": "code",
+          "expr": "sum by (name) (container_memory_cache{name=~\"$container_name\",container_label_org_label_schema_group=\"\",instance=\"$instance\"})",
           "intervalFactor": 2,
           "legendFormat": "{{name}}",
           "metric": "container_memory_cache",
+          "range": true,
           "refId": "A",
           "step": 2
         }
@@ -1889,7 +1899,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 51
+        "y": 58
       },
       "id": 15,
       "options": {
@@ -1901,9 +1911,7 @@
           ],
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true,
-          "sortBy": "Mean",
-          "sortDesc": false
+          "showLegend": true
         },
         "tooltip": {
           "hideZeros": false,
@@ -1920,7 +1928,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by (name) (rate(container_network_receive_bytes_total{image!=\"\",container_label_org_label_schema_group=\"\"}[5m]))",
+          "expr": "sum by (name) (rate(container_network_receive_bytes_total{name=~\"$container_name\",container_label_org_label_schema_group=\"\",instance=\"$instance\"}[$__rate_interval]))",
           "intervalFactor": 10,
           "legendFormat": "{{ name }}",
           "metric": "container_network_receive_bytes_total",
@@ -2000,7 +2008,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 51
+        "y": 58
       },
       "id": 16,
       "options": {
@@ -2012,7 +2020,9 @@
           ],
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
         },
         "tooltip": {
           "hideZeros": false,
@@ -2029,7 +2039,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by (name) (rate(container_network_transmit_bytes_total{image!=\"\",container_label_org_label_schema_group=\"\"}[5m]))",
+          "expr": "sum by (name) (rate(container_network_transmit_bytes_total{name=~\"$container_name\",container_label_org_label_schema_group=\"\",instance=\"$instance\"}[$__rate_interval]))",
           "intervalFactor": 10,
           "legendFormat": "{{ name }}",
           "metric": "container_network_transmit_bytes_total",
@@ -2048,7 +2058,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 58
+        "y": 65
       },
       "id": 35,
       "panels": [],
@@ -2130,7 +2140,7 @@
         "h": 6,
         "w": 5,
         "x": 0,
-        "y": 59
+        "y": 66
       },
       "id": 4,
       "options": {
@@ -2149,7 +2159,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "up{job=~\"cadvisor|vmagent|docker-state-exporter|node-exporter\"}",
+          "expr": "up{job=~\"cadvisor|vmagent|docker-state-exporter|node-exporter\",instance=\"$instance\"}",
           "format": "table",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -2449,7 +2459,7 @@
         "h": 13,
         "w": 7,
         "x": 5,
-        "y": 59
+        "y": 66
       },
       "id": 38,
       "options": {
@@ -2479,7 +2489,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"system\"}[5m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\"}[5m])))",
+          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"system\",instance=\"$instance\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\"}[$__rate_interval])))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -2494,7 +2504,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"user\"}[5m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\"}[5m])))",
+          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"user\",instance=\"$instance\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}[$__rate_interval])))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "User - Normal processes executing in user mode",
@@ -2508,7 +2518,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"nice\"}[5m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\"}[5m])))",
+          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"nice\",instance=\"$instance\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}[$__rate_interval])))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Nice - Niced processes executing in user mode",
@@ -2522,7 +2532,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"iowait\"}[5m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\"}[5m])))",
+          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"iowait\",instance=\"$instance\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}[$__rate_interval])))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Iowait - Waiting for I/O to complete",
@@ -2536,7 +2546,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"irq\"}[5m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\"}[5m])))",
+          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"irq\",instance=\"$instance\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}[$__rate_interval])))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Irq - Servicing interrupts",
@@ -2550,7 +2560,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"softirq\"}[5m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\"}[5m])))",
+          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"softirq\",instance=\"$instance\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}[$__rate_interval])))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Softirq - Servicing softirqs",
@@ -2564,7 +2574,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"steal\"}[5m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\"}[5m])))",
+          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"steal\",instance=\"$instance\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}[$__rate_interval])))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Steal - Time spent in other operating systems when running in a virtualized environment",
@@ -2578,7 +2588,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"idle\"}[5m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\"}[5m])))",
+          "expr": "sum by(instance) (irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\", mode=\"idle\",instance=\"$instance\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}[$__rate_interval])))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -2915,7 +2925,7 @@
         "h": 13,
         "w": 6,
         "x": 12,
-        "y": 59
+        "y": 66
       },
       "id": 37,
       "options": {
@@ -2945,7 +2955,7 @@
             "uid": "df2b935e-5615-42fa-a7c4-d6fd5779662e"
           },
           "editorMode": "code",
-          "expr": "node_memory_Inactive_bytes{job=\"$host_node_exporter_job_name\"}",
+          "expr": "node_memory_Inactive_bytes{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Inactive - Memory which has been less recently used.  It is more eligible to be reclaimed for other purposes",
@@ -2959,7 +2969,7 @@
             "uid": "df2b935e-5615-42fa-a7c4-d6fd5779662e"
           },
           "editorMode": "code",
-          "expr": "node_memory_Active_bytes{job=\"$host_node_exporter_job_name\"}",
+          "expr": "node_memory_Active_bytes{job=\"$host_node_exporter_job_name\",instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Active - Memory that has been used more recently and usually not reclaimed unless absolutely necessary",
@@ -3040,7 +3050,7 @@
         "h": 13,
         "w": 6,
         "x": 18,
-        "y": 59
+        "y": 66
       },
       "id": 36,
       "options": {
@@ -3069,7 +3079,7 @@
             "uid": "df2b935e-5615-42fa-a7c4-d6fd5779662e"
           },
           "editorMode": "code",
-          "expr": "node_filesystem_avail_bytes{job=\"$host_node_exporter_job_name\",device!~'rootfs'}",
+          "expr": "node_filesystem_avail_bytes{job=\"$host_node_exporter_job_name\",device!~'rootfs',instance=\"$instance\"}",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -3085,7 +3095,7 @@
             "uid": "df2b935e-5615-42fa-a7c4-d6fd5779662e"
           },
           "editorMode": "code",
-          "expr": "node_filesystem_free_bytes{job=\"$host_node_exporter_job_name\",device!~'rootfs'}",
+          "expr": "node_filesystem_free_bytes{job=\"$host_node_exporter_job_name\",device!~'rootfs',instance=\"$instance\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 1,
@@ -3100,7 +3110,7 @@
             "uid": "df2b935e-5615-42fa-a7c4-d6fd5779662e"
           },
           "editorMode": "code",
-          "expr": "node_filesystem_size_bytes{job=\"$host_node_exporter_job_name\",device!~'rootfs'}",
+          "expr": "node_filesystem_size_bytes{job=\"$host_node_exporter_job_name\",device!~'rootfs',instance=\"$instance\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 1,
@@ -3155,7 +3165,7 @@
         "h": 3,
         "w": 5,
         "x": 0,
-        "y": 65
+        "y": 72
       },
       "id": 10,
       "maxDataPoints": 100,
@@ -3184,11 +3194,13 @@
             "type": "prometheus",
             "uid": "${data_source}"
           },
-          "expr": "machine_cpu_cores",
+          "editorMode": "code",
+          "expr": "machine_cpu_cores{instance=\"$instance\"}",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "",
           "metric": "machine_cpu_cores",
+          "range": true,
           "refId": "A",
           "step": 20
         }
@@ -3240,7 +3252,7 @@
         "h": 4,
         "w": 5,
         "x": 0,
-        "y": 68
+        "y": 75
       },
       "id": 9,
       "maxDataPoints": 100,
@@ -3269,7 +3281,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum (machine_memory_bytes{kubernetes_io_hostname=~\"^.*\"})",
+          "expr": "sum (machine_memory_bytes{kubernetes_io_hostname=~\"^.*\",instance=\"$instance\"})",
           "interval": "10s",
           "intervalFactor": 1,
           "range": true,
@@ -3287,7 +3299,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 72
+        "y": 79
       },
       "id": 21,
       "panels": [],
@@ -3387,7 +3399,7 @@
         "h": 10,
         "w": 21,
         "x": 0,
-        "y": 73
+        "y": 80
       },
       "id": 5,
       "options": {
@@ -3408,7 +3420,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "(time() - container_start_time_seconds{name=~\".+\"})/86400",
+          "expr": "(time() - container_start_time_seconds{name=~\"$container_name\",instance=\"$instance\"})/86400",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -3531,6 +3543,18 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Running"
+              }
+            ]
           }
         ]
       },
@@ -3538,7 +3562,7 @@
         "h": 10,
         "w": 21,
         "x": 0,
-        "y": 83
+        "y": 90
       },
       "id": 28,
       "options": {
@@ -3547,7 +3571,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Value #B (lastNotNull)"
+            "displayName": "Running"
           }
         ]
       },
@@ -3559,7 +3583,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "(time() - container_start_time_seconds{name=~\".+\"})/86400",
+          "expr": "(time() - container_start_time_seconds{name=~\"$container_name\",instance=\"$instance\"})/86400",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -3574,7 +3598,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "container_state_status{name=~\".+\", job=\"$host_node_exporter_job_name\"}",
+          "expr": "container_state_status{name=~\"$container_name\", job=\"$host_node_exporter_job_name\",instance=\"$instance\"}",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -3712,7 +3736,7 @@
         "h": 7,
         "w": 21,
         "x": 0,
-        "y": 93
+        "y": 100
       },
       "id": 30,
       "options": {
@@ -3733,7 +3757,7 @@
             "uid": "${data_source}"
           },
           "editorMode": "code",
-          "expr": "sum(container_fs_usage_bytes) by (name)",
+          "expr": "sum(container_fs_usage_bytes{name=~\"$container_name\", instance=\"$instance\"}) by (name)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -3969,7 +3993,7 @@
         "h": 13,
         "w": 24,
         "x": 0,
-        "y": 100
+        "y": 107
       },
       "id": 24,
       "interval": "30s",
@@ -3992,7 +4016,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\".+\"}[5m])) by (name) * 100",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name) * 100",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -4008,7 +4032,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(container_memory_usage_bytes{name=~\".+\"}) by (name)",
+          "expr": "sum(container_memory_usage_bytes{name=~\"$container_name\",instance=\"$instance\"}) by (name)",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -4023,7 +4047,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_fs_reads_bytes_total{name=~\".+\"}[5m])) by (name)\r\n",
+          "expr": "sum(rate(container_fs_reads_bytes_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name)\r\n",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -4038,7 +4062,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_fs_writes_bytes_total{name=~\".+\"}[5m])) by (name)\r\n",
+          "expr": "sum(rate(container_fs_writes_bytes_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name)\r\n",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -4053,7 +4077,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_network_receive_bytes_total{name=~\".+\"}[5m])) by (name)\r\n",
+          "expr": "sum(rate(container_network_receive_bytes_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name)\r\n",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -4068,7 +4092,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(container_network_transmit_bytes_total{name=~\".+\"}[5m])) by (name)\r\n",
+          "expr": "sum(rate(container_network_transmit_bytes_total{name=~\"$container_name\",instance=\"$instance\"}[$__rate_interval])) by (name)\r\n",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -4195,6 +4219,49 @@
         "type": "textbox"
       },
       {
+        "current": {
+          "text": "black-square",
+          "value": "black-square"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${data_source}"
+        },
+        "definition": "label_values(node_uname_info,instance)",
+        "includeAll": false,
+        "label": "Instance",
+        "name": "instance",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(node_uname_info,instance)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "definition": "label_values(container_state_status{instance=\"$instance\"},name)",
+        "description": "",
+        "includeAll": true,
+        "label": "Container",
+        "name": "container_name",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(container_state_status{instance=\"$instance\"},name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
         "baseFilters": [],
         "datasource": {
           "type": "prometheus",
@@ -4212,7 +4279,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "WIP - Docker overview",
-  "uid": "oc_docker_cadvisor_dashboard",
-  "version": 5
+  "title": "Docker overview",
+  "uid": "12",
+  "version": 6
 }
