@@ -3,7 +3,7 @@ logging {
 }
 
 //
-// === LOKI CLIENT (clients)
+// === LOKI CLIENT
 //
 loki.write "default" {
   endpoint {
@@ -15,10 +15,10 @@ loki.write "default" {
     }
 
     tls_config {
-      min_version = "TLS13"
-      ca_file     = "/certs/ca-chain.crt"
-      cert_file   = "/certs/vm.crt"
-      key_file    = "/certs/vm.key"
+      min_version          = "TLS13"
+      ca_file              = "/certs/ca-chain.crt"
+      cert_file            = "/certs/vm.crt"
+      key_file             = "/certs/vm.key"
       insecure_skip_verify = false
     }
   }
@@ -30,7 +30,7 @@ loki.write "default" {
 }
 
 //
-// === FILE DISCOVERY
+// === SURICATA — file discovery + pipeline
 //
 local.file_match "suricata" {
   path_targets = [
@@ -41,117 +41,55 @@ local.file_match "suricata" {
   ]
 }
 
-//
-// === SOURCES
-//
 loki.source.file "suricata" {
   targets    = local.file_match.suricata.targets
   forward_to = [loki.process.suricata.receiver]
 }
 
-loki.source.journal "systemd" {
-  forward_to = [loki.relabel.journal_filter.receiver]
-  path       = "/var/log/journal" 
-}
-
-loki.relabel "journal_filter" {
-  forward_to = [loki.process.journal_logs.receiver]
-
-  rule {
-    source_labels = ["__journal__systemd_unit"]
-    target_label  = "unit"
-  }
-  
-  rule {
-    source_labels = ["__journal__systemd_unit"]
-    regex         = "(ssh.service|sshd.service|sudo.service|systemd-logind.service)"
-    target_label  = "job"
-    replacement   = "auth"
-  }
-
-  rule {
-    source_labels = ["job"]
-    regex         = ""
-    target_label  = "job"
-    replacement   = "syslog"
-  }
-}
-
-//
-// === PIPELINE: SURICATA
-//
 loki.process "suricata" {
-  // Extract JSON fields from Suricata's eve.json
+
   stage.json {
     expressions = {
       timestamp   = "timestamp",
       event_type  = "event_type",
-      flow_id     = "flow_id",
-      in_iface    = "in_iface",
 
       src_ip      = "src_ip",
       src_port    = "src_port",
       dest_ip     = "dest_ip",
       dest_port   = "dest_port",
       proto       = "proto",
-      app_proto   = "app_proto",
 
-      // ALERT
       alert_severity     = "alert.severity",
       alert_signature    = "alert.signature",
       alert_signature_id = "alert.signature_id",
       alert_category     = "alert.category",
 
-      // DNS
-      dns_type    = "dns.type",
       dns_rrname  = "dns.rrname",
-      dns_rrtype  = "dns.rrtype",
-      dns_rcode   = "dns.rcode",
 
-      // FLOW
-      flow_state  = "flow.state",
-      flow_reason = "flow.reason",
+      http_host   = "http.hostname",
+      http_url    = "http.url",
 
-      // HTTP
-      http_host       = "http.hostname",
-      http_url        = "http.url",
-      http_user_agent = "http.http_user_agent",
-
-      // TLS
-      tls_sni       = "tls.sni",
-      tls_issuer    = "tls.issuerdn",
-      tls_subject   = "tls.subject",
-
-      // FILE
-      file_name     = "fileinfo.filename",
-      file_size     = "fileinfo.size",
-
-      // STATS
-      stats         = "stats",
+      tls_sni     = "tls.sni",
     }
   }
 
-  // Parse the timestamp
   stage.timestamp {
     source = "timestamp"
     format = "2006-01-02T15:04:05.999999-0700"
   }
 
-  // Set labels from extracted fields
   stage.labels {
     values = {
-      event_type   = "",
-      src_ip       = "",
-      prst_port    = "",
-      sioto        = "",
-      degnature_id = "",
-      signature    = "",
-      category     = "",
-      severity     = "",
+      event_type     = "",
+      src_ip         = "",
+      dest_ip        = "",
+      dest_port      = "",
+      proto          = "",
+      alert_category = "",
+      alert_severity = "",
     }
   }
 
-  // Keep the original JSON as the log line
   stage.output {
     source = "message"
   }
@@ -159,12 +97,75 @@ loki.process "suricata" {
   forward_to = [loki.write.default.receiver]
 }
 
-loki.process "journal_logs" {
-  stage.labels {
-    values = {
-      unit     = "",
-      job      = "",
-    }
+//
+// === SYSTEMD JOURNAL
+//
+loki.source.journal "systemd" {
+  forward_to    = [loki.write.default.receiver]
+  path          = "/var/log/journal"
+  relabel_rules = loki.relabel.journal_filter.rules
+  format_as_json = false
+
+  // Static labels applied to every journal entry.
+  // `job = "syslog"` is the SAFE DEFAULT — it overrides Alloy's
+  // auto-generated `job = loki.source.journal.systemd`.
+  // The relabel rules below override `job` for known units.
+  labels = {
+    job = "syslog",
   }
-  forward_to = [loki.write.default.receiver]
+}
+
+loki.relabel "journal_filter" {
+  // Not used as a pipeline component — the rules are consumed via
+  // loki.source.journal.systemd.relabel_rules. forward_to must still be
+  // declared but can be empty.
+  forward_to = []
+
+  // 1) Promote the systemd unit name to a normal `unit` label.
+  rule {
+    action        = "replace"
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+
+  // 2) Optional but useful: hostname and priority as labels.
+  rule {
+    action        = "replace"
+    source_labels = ["__journal__hostname"]
+    target_label  = "hostname"
+  }
+
+  rule {
+    action        = "replace"
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+
+  // 3) Map known units to logical jobs.
+  rule {
+    action        = "replace"
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(ssh\\.service|sshd\\.service|sudo\\.service|systemd-logind\\.service)"
+    target_label  = "job"
+    replacement   = "auth"
+  }
+
+  rule {
+    action        = "replace"
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "fail2ban\\.service"
+    target_label  = "job"
+    replacement   = "fail2ban"
+  }
+
+  rule {
+    action        = "replace"
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(fwknop-server\\.service|fwknop\\.service)"
+    target_label  = "job"
+    replacement   = "fwknop"
+  }
+
+  // No fallback rule needed — `job = "syslog"` is set statically in
+  // loki.source.journal.systemd.labels above.
 }
