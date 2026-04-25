@@ -1,5 +1,10 @@
-.idea
+/certs/*
+!/certs/.gitkeep
 
-/vm-agent/data
-
+/nginx/config/*.htpasswd
 *.env
+
+/alloy/secrets/*
+!/alloy/secrets/.gitkeep
+
+notes.md

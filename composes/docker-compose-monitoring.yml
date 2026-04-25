@@ -1,11 +1,12 @@
-name: monitoring
+name: monitoring-instance
 
 services:
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: ghcr.io/google/cadvisor:0.56.2
     container_name: cadvisor
-    ports:
-      - "$SERVICES_HOST:$CADVISOR_PORT:8080"
+    networks:
+      - host-monitoring-network
+    
     volumes:
       - /:/rootfs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -21,29 +22,14 @@ services:
       retries: 3
       start_period: 20s
 
-  docker-state-exporter:
-    image: karugaru/docker_state_exporter
-    container_name: docker-state-exporter
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    ports:
-      - "$SERVICES_HOST:$DOCKER_STATE_EXPORTER_PORT:8080"
-    mem_limit: 128m
-    cpus: 0.25
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-
   node-exporter:
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:v1.11.1
     container_name: node-exporter
+    networks:
+      - host-monitoring-network
+
     hostname: $HOSTNAME
-    ports:
-      - "$SERVICES_HOST:$NODE_EXPORTER_PORT:9100"
+
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -66,9 +52,8 @@ services:
     depends_on:
       node-exporter:
         condition: service_healthy
-      docker-state-exporter:
-        condition: service_healthy
       cadvisor:
         condition: service_healthy
+    
     volumes:
-      - ../vm-agent/configs/prometheus.yml:/etc/prometheus/configs/prometheus.yml
+      - ../vmagent/configs/prometheus.yml:/etc/prometheus/configs/prometheus.yml:ro

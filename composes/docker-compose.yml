@@ -1,0 +1,10 @@
+name: monitoring-instance
+
+networks:
+  host-monitoring-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.180.0.0/16
+          gateway: 172.180.0.1

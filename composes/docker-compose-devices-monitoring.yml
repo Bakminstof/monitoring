@@ -2,16 +2,17 @@ name: monitoring
 
 services:
   smartctl-exporter:
-    image: prometheuscommunity/smartctl-exporter:latest
+    image: prometheuscommunity/smartctl-exporter:v0.14.0
     container_name: smartctl-exporter
+    networks:
+      - host-monitoring-network
+
     privileged: true
     volumes:
       - /dev:/dev:ro
       - /run/udev:/run/udev:ro
     mem_limit: 256m
     cpus: 0.5
-    ports:
-      - "$SERVICES_HOST:$SMARTCTL_EXPORTER_PORT:9633"
     user: root
     command:
       - '--smartctl.path=/usr/sbin/smartctl'
@@ -28,5 +29,6 @@ services:
     depends_on:
       smartctl-exporter:
         condition: service_healthy
+    
     volumes:
-      - ../vm-agent/configs/prometheus-devices.yml:/etc/prometheus/configs/prometheus-devices.yml
+      - ../vmagent/configs/prometheus-devices.yml:/etc/prometheus/configs/prometheus-devices.yml:ro

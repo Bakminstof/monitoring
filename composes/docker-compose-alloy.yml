@@ -1,0 +1,78 @@
+name: monitoring-instance
+
+services:
+  init-alloy:
+    image: busybox
+    command: sh -c "chown -R 65534:65534 /alloy-data /alloy-storage"
+    networks:
+      - host-monitoring-network
+    volumes:
+      - alloy-data:/alloy-data
+      - alloy-storage:/alloy-storage
+    restart: "no"
+
+  alloy:
+    image: grafana/alloy:v1.15.0
+    container_name: alloy-instance
+    restart: unless-stopped
+    depends_on:
+      - init-alloy
+
+    environment:
+      INSTANCE: $HOSTNAME
+
+    command: >
+      run 
+      --disable-reporting
+      --storage.path=/storage
+      --server.http.listen-addr=0.0.0.0:12345
+      /etc/alloy/config.alloy 
+
+    volumes:
+      - ../alloy/config/config.alloy:/etc/alloy/config.alloy:ro
+      - ../alloy/secrets:/secrets:ro
+      - ../certs:/certs:ro
+      - /var/log:/var/log:ro
+      - alloy-data:/var/lib/alloy:rw
+      - alloy-storage:/storage:rw
+
+    networks:
+       - host-monitoring-network
+    extra_hosts:
+      - "loki.voidpath.local:$LOKI_IP"
+
+    mem_limit: 256m
+    cpus: 0.5
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          memory: 128M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    read_only: true
+    tmpfs:
+      - /tmp
+
+    user: "65534:65534"  # nobody
+    group_add:
+      - "adm"
+
+  nginx:
+    depends_on:
+      - alloy
+
+volumes:
+  alloy-data:
+  alloy-storage:

@@ -1,0 +1,209 @@
+logging {
+  level = "info"
+}
+
+//
+// === LOKI CLIENT (clients)
+//
+loki.write "default" {
+  endpoint {
+    url = "https://loki.voidpath.local:3100/loki/api/v1/push"
+
+    basic_auth {
+      username      = "loki"
+      password_file = "/secrets/loki_password_file"
+    }
+
+    tls_config {
+      min_version = "TLS13"
+      ca_file     = "/certs/ca-chain.crt"
+      cert_file   = "/certs/vm.crt"
+      key_file    = "/certs/vm.key"
+      insecure_skip_verify = false
+    }
+  }
+
+  external_labels = {
+    agent    = "alloy",
+    instance = env("INSTANCE"),
+  }
+}
+
+//
+// === FILE DISCOVERY
+//
+local.file_match "suricata" {
+  path_targets = [
+    {
+      __path__ = "/var/log/suricata/eve.json",
+      job      = "suricata",
+    },
+  ]
+}
+
+local.file_match "syslog" {
+  path_targets = [
+    {
+      __path__ = "/var/log/syslog",
+      job      = "syslog",
+    },
+  ]
+}
+
+local.file_match "auth" {
+  path_targets = [
+    {
+      __path__ = "/var/log/auth.log",
+      job      = "auth",
+    },
+  ]
+}
+
+//
+// === SOURCES
+//
+loki.source.file "suricata" {
+  targets    = local.file_match.suricata.targets
+  forward_to = [loki.process.suricata.receiver]
+}
+
+loki.source.file "syslog" {
+  targets    = local.file_match.syslog.targets
+  forward_to = [loki.process.syslog.receiver]
+}
+
+loki.source.file "auth" {
+  targets    = local.file_match.auth.targets
+  forward_to = [loki.process.auth.receiver]
+}
+
+//
+// === PIPELINE: SURICATA
+//
+loki.process "suricata" {
+  // Extract JSON fields from Suricata's eve.json
+  stage.json {
+    expressions = {
+      timestamp   = "timestamp",
+      event_type  = "event_type",
+      flow_id     = "flow_id",
+      in_iface    = "in_iface",
+
+      src_ip      = "src_ip",
+      src_port    = "src_port",
+      dest_ip     = "dest_ip",
+      dest_port   = "dest_port",
+      proto       = "proto",
+      app_proto   = "app_proto",
+
+      // ALERT
+      alert_severity     = "alert.severity",
+      alert_signature    = "alert.signature",
+      alert_signature_id = "alert.signature_id",
+      alert_category     = "alert.category",
+
+      // DNS
+      dns_type    = "dns.type",
+      dns_rrname  = "dns.rrname",
+      dns_rrtype  = "dns.rrtype",
+      dns_rcode   = "dns.rcode",
+
+      // FLOW
+      flow_state  = "flow.state",
+      flow_reason = "flow.reason",
+
+      // HTTP
+      http_host       = "http.hostname",
+      http_url        = "http.url",
+      http_user_agent = "http.http_user_agent",
+
+      // TLS
+      tls_sni       = "tls.sni",
+      tls_issuer    = "tls.issuerdn",
+      tls_subject   = "tls.subject",
+
+      // FILE
+      file_name     = "fileinfo.filename",
+      file_size     = "fileinfo.size",
+
+      // STATS
+      stats         = "stats",
+    }
+  }
+
+  // Parse the timestamp
+  stage.timestamp {
+    source = "timestamp"
+    format = "2006-01-02T15:04:05.999999-0700"
+  }
+
+  // Set labels from extracted fields
+  stage.labels {
+    values = {
+      event_type   = "",
+      src_ip       = "",
+      prst_port    = "",
+      sioto        = "",
+      degnature_id = "",
+      signature    = "",
+      category     = "",
+      severity     = "",
+    }
+  }
+
+  // Keep the original JSON as the log line
+  stage.output {
+    source = "message"
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+//
+// === PIPELINE: SYSLOG
+//
+loki.process "syslog" {
+  // Parse syslog format
+  stage.regex {
+    expression = `^(?P<timestamp>\w+\s+\d+\s+\d+:\d+:\d+)\s+(?P<hostname>\S+)\s+(?P<app_name>\S+)(?:\[(?P<pid>\d+)\])?:\s+(?P<message>.*)$`
+  }
+
+  stage.timestamp {
+    source = "timestamp"
+    format = "Jan _2 15:04:05"
+  }
+
+  stage.labels {
+    values = {
+      job      = "syslog",
+      app_name = "",
+      hostname = "",
+    }
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+//
+// === PIPELINE: AUTH
+//
+loki.process "auth" {
+  // Parse auth.log format
+  stage.regex {
+    expression = `^(?P<timestamp>\w+\s+\d+\s+\d+:\d+:\d+)\s+(?P<hostname>\S+)\s+(?P<app_name>\S+)(?:\[(?P<pid>\d+)\])?:\s+(?P<message>.*)$`
+  }
+
+  stage.timestamp {
+    source = "timestamp"
+    format = "Jan _2 15:04:05"
+  }
+
+  stage.labels {
+    values = {
+      job      = "auth",
+      app_name = "",
+    }
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
