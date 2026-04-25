@@ -41,24 +41,6 @@ local.file_match "suricata" {
   ]
 }
 
-local.file_match "syslog" {
-  path_targets = [
-    {
-      __path__ = "/var/log/syslog",
-      job      = "syslog",
-    },
-  ]
-}
-
-local.file_match "auth" {
-  path_targets = [
-    {
-      __path__ = "/var/log/auth.log",
-      job      = "auth",
-    },
-  ]
-}
-
 //
 // === SOURCES
 //
@@ -67,14 +49,32 @@ loki.source.file "suricata" {
   forward_to = [loki.process.suricata.receiver]
 }
 
-loki.source.file "syslog" {
-  targets    = local.file_match.syslog.targets
-  forward_to = [loki.process.syslog.receiver]
+loki.source.journal "systemd" {
+  forward_to = [loki.relabel.journal_filter.receiver]
+  path       = "/var/log/journal" 
 }
 
-loki.source.file "auth" {
-  targets    = local.file_match.auth.targets
-  forward_to = [loki.process.auth.receiver]
+loki.relabel "journal_filter" {
+  forward_to = [loki.process.journal_logs.receiver]
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+  
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(ssh.service|sshd.service|sudo.service|systemd-logind.service)"
+    target_label  = "job"
+    replacement   = "auth"
+  }
+
+  rule {
+    source_labels = ["job"]
+    regex         = ""
+    target_label  = "job"
+    replacement   = "syslog"
+  }
 }
 
 //
@@ -159,51 +159,12 @@ loki.process "suricata" {
   forward_to = [loki.write.default.receiver]
 }
 
-//
-// === PIPELINE: SYSLOG
-//
-loki.process "syslog" {
-  // Parse syslog format
-  stage.regex {
-    expression = `^(?P<timestamp>\w+\s+\d+\s+\d+:\d+:\d+)\s+(?P<hostname>\S+)\s+(?P<app_name>\S+)(?:\[(?P<pid>\d+)\])?:\s+(?P<message>.*)$`
-  }
-
-  stage.timestamp {
-    source = "timestamp"
-    format = "Jan _2 15:04:05"
-  }
-
+loki.process "journal_logs" {
   stage.labels {
     values = {
-      job      = "syslog",
-      app_name = "",
-      hostname = "",
+      unit     = "",
+      job      = "",
     }
   }
-
-  forward_to = [loki.write.default.receiver]
-}
-
-//
-// === PIPELINE: AUTH
-//
-loki.process "auth" {
-  // Parse auth.log format
-  stage.regex {
-    expression = `^(?P<timestamp>\w+\s+\d+\s+\d+:\d+:\d+)\s+(?P<hostname>\S+)\s+(?P<app_name>\S+)(?:\[(?P<pid>\d+)\])?:\s+(?P<message>.*)$`
-  }
-
-  stage.timestamp {
-    source = "timestamp"
-    format = "Jan _2 15:04:05"
-  }
-
-  stage.labels {
-    values = {
-      job      = "auth",
-      app_name = "",
-    }
-  }
-
   forward_to = [loki.write.default.receiver]
 }
